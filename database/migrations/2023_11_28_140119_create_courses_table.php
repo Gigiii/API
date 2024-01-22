@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('courses', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('fieldOfStudyId');
+            $table->foreign('fieldOfStudyId')->references('id')->on('fields')->onDelete('cascade');
             $table->string('name');
-            $table->string('role');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->integer('user_id');
-            $table->rememberToken();
-            $table->foreignId('current_team_id')->nullable();
+            $table->tinyInteger('credits');
+            $table->string('timetable');
+            $table->string('pictureLocation');
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('courses');
     }
 };

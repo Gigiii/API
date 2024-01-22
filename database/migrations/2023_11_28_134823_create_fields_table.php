@@ -11,16 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('fields', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('schoolId');
+            $table->foreign('schoolId')->references('id')->on('schools')->onDelete('cascade');
             $table->string('name');
-            $table->string('role');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->integer('user_id');
-            $table->rememberToken();
-            $table->foreignId('current_team_id')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('fields');
     }
 };
