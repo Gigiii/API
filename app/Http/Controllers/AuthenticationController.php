@@ -107,6 +107,7 @@ class AuthenticationController extends Controller
             'auth_token' => $authToken,   
             'role' => $user['role'],
             'user_id' => $user['id'],
+            'name' => $user['name'],
         ]);
         
     }

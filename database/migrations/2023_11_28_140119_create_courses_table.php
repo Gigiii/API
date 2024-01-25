@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->tinyInteger('credits');
             $table->string('timetable');
-            $table->string('pictureLocation');
+            $table->string('pictureLocation')->nullable();
             $table->timestamps();
         });
     }
