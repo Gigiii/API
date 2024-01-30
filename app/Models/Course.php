@@ -16,10 +16,10 @@ class Course extends Model
         return $this->belongsTo(Field::class, 'fieldId');
     }
     public function AssignedCourses(){
-        return $this->hasMany(AssignedCourses::class);
+        return $this->hasMany(AssignedCourses::class, 'courseId');
     }
 
     public function EnrolledCourses(){
-        return $this->hasMany(EnrolledCourses::class);
+        return $this->hasMany(EnrolledCourses::class, 'courseId');
     }
 }

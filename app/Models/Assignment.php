@@ -9,18 +9,18 @@ class Assignment extends Model
 {
     use HasFactory;
     protected $table = "assignments";
-    protected $fillable = ['title', 'description', 'deadline',
+    protected $fillable = ['professorId', 'title', 'description', 'deadline',
                            'maxGrade', 'pictureLocation'];
     public function Professor(){
         return $this->belongsTo(Professor::class, "professorId");
     }
     public function AssignedCourses(){
-        return $this->hasMany(AssignedCourses::class);
+        return $this->hasMany(AssignedCourses::class, "assignmentId");
     }
     public function AssignmentAttachments(){
-        return $this->hasMany(AssignmentAttachment::class);
+        return $this->hasMany(AssignmentAttachment::class, "assignmentId");
     }
     public function Submissions(){
-        return $this->hasMany(Submission::class);
+        return $this->hasMany(Submission::class, "assignmentId");
     }
 }

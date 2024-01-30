@@ -30,12 +30,12 @@ Route::post('/login',  [AuthenticationController::class, 'login']);
 
 #Assignment Routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/assignment/createAssignment', [AssignmentController::class, 'createAssignment']);
+    Route::post('/assignment/createAssignment', [AssignmentController::class, 'createAssignment']);
     Route::get('/assignment/showAssignments/{courseId}', [AssignmentController::class, 'showAssignments']);
     Route::get('/assignment/showAssignment/{assignmentId}', [AssignmentController::class, 'showAssignment']);
     Route::patch('/assignment/updateAssignment/{assignmentId}', [AssignmentController::class, 'updateAssignment']);
     Route::delete('/assignment/deleteAssignment/{assignmentId}', [AssignmentController::class, 'deleteAssignment']);
-   
+    Route::delete('/assignment/deleteAttachment/{attachmentId}', [AssignmentController::class, 'deleteAttachment']);
 });
 
 #Submission Routes
@@ -44,14 +44,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/submission/gradeSubmission/{submissionId}', [SubmissionController::class, 'gradeSubmission']);
     Route::get('/submission/showSubmissions/{assignmentId}', [SubmissionController::class, 'showSubmissions']);
     Route::get('/submission/showSubmission/{studentId}/{assignmentId}', [SubmissionController::class, 'showSubmission']);
-    Route::post('/submission/createSubmissionAttachment/{submissionId}', [SubmissionController::class, 'createSubmissionAttachment']);
+    Route::get('/submission/checkSubmission/{studentId}/{assignmentId}', [SubmissionController::class, 'checkSubmission']);
+    Route::post('/submission/createSubmissionAttachment', [SubmissionController::class, 'createSubmissionAttachment']);
 });
 
 #Course Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/course/showCourses/{Id}', [CourseController::class, 'showCourses']);
     Route::get('/course/showCourse/{Id}/{courseId}', [CourseController::class, 'showCourse']);
-
 });
 
 

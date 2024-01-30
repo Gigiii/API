@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreign('fieldOfStudyId')->references('id')->on('fields')->onDelete('cascade');
             $table->string('name');
             $table->tinyInteger('credits');
-            $table->string('timetable');
-            $table->string('pictureLocation')->nullable();
+            $table->string('timetable')->nullable();
+            $table->string('pictureLocation');
             $table->timestamps();
         });
     }

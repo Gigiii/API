@@ -18,4 +18,8 @@ class Submission extends Model
     public function Assignment(){
         return $this->belongsTo(Assignment::class, "assignmentId");
     }
+
+    public function Attachment(){
+        return $this->hasMany(SubmissionAttachment::class, "submissionId");
+    }
 }

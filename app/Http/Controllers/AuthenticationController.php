@@ -106,7 +106,7 @@ class AuthenticationController extends Controller
         return response()->json([
             'auth_token' => $authToken,   
             'role' => $user['role'],
-            'user_id' => $user['id'],
+            'user_id' => $user['user_id'],
             'name' => $user['name'],
         ]);
         

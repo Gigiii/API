@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\SubmissionAttachment;
 use Illuminate\Http\Request;
 use App\Models\Submission;
+use App\Models\Assignment;
 use Carbon\Carbon;
 
 class SubmissionController extends Controller
 {
     protected $model = Submission::class;
 
-        /**
+    /**
      * Create a submission
      */
     public function createSubmission(Request $request, $assignmentId){
@@ -21,6 +22,7 @@ class SubmissionController extends Controller
                 'title' => 'required',
                 'description' => 'required',
                 'status' => 'required|boolean',
+                'fileLocations' => 'required',
                 ]);
             $submission = new Submission;
             $submission->title = $request->title;
@@ -30,14 +32,22 @@ class SubmissionController extends Controller
             $submission->studentId = auth()->user()->user_id;
             $submission->assignmentId = $assignmentId;
             $submission->saveOrFail();
-            return response()->json(['message' => 'Submission created successfully']);
+            foreach ($request->fileLocations as $fileLocation){
+                $newRequest = new Request();
+                $newRequest->merge([
+                    'submissionId' => $submission->id,
+                    'fileLocation' => $fileLocation
+                ]);
+                $this->createSubmissionAttachment($newRequest);  
+            }
+            return response()->json($submission);
 
         }else{
             return response("Only a student can create a submission", 403);
         }
     }
 
-        /**
+    /**
      * Give a grade to an existing submission
      */
     public function gradeSubmission(Request $request, $submissionId){
@@ -54,25 +64,45 @@ class SubmissionController extends Controller
         }
     }
 
-        /**
+    /**
      * Return a specific submission
      */
     public function showSubmission($studentId, $assignmentId){
         $submission = Submission::where('studentId', $studentId)
         ->where('assignmentId', $assignmentId)->firstOrFail();
+        $student = $submission->student;
+        $attachment  = $submission->attachment;
         return response()->json($submission);
     }
 
-        /**
+    /**
+     * Check if a student has submitted
+     */
+    public function checkSubmission($studentId, $assignmentId){
+        $submission = Submission::where('studentId', $studentId)
+        ->where('assignmentId', $assignmentId)->first();
+        if ($submission != null) {
+            return 1;
+        }else{
+            return 0;
+        }
+    }
+
+    /**
      * Return all submissions
      */
     public function showSubmissions($assignmentId){
-        $submission = Submission::where('assignmentId', $assignmentId)
-        ->get();
-        return response()->json($submission);
+        $submissions = Submission::where('assignmentId', $assignmentId)->get();
+
+        
+        foreach ($submissions as $submission) {
+            $student = $submission->student;
+        }
+
+        return response()->json($submissions);
     }
 
-        /**
+    /**
      * Return all attachments for a submission
      */
     private function showSubmissionAttachments($id){
@@ -81,19 +111,20 @@ class SubmissionController extends Controller
 
     }
 
-        /**
+    /**
      * Create an attachment for an existing submission
      */
-    public function createSubmissionAttachment(Request $request, $submissionId){
+    public function createSubmissionAttachment(Request $request){
 
         if(auth()->user()->role == "Student"){
 
         $request->validate([
-            'fileLocation' => 'required'
+            'fileLocation' => 'required',
+            'submissionId' => 'required'
         ]);
 
         $attachment = new SubmissionAttachment;
-        $attachment->submissionId = $submissionId;
+        $attachment->submissionId = $request->submissionId;
         $attachment->fileLocation = $request->fileLocation;
         $attachment->saveOrFail();
         return response()->json(['message' => 'Attachment created successfully', 'entry' => $attachment]);

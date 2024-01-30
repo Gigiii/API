@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AssignedCourses;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\CourseProfessors;
@@ -12,7 +13,7 @@ class CourseController extends Controller
 {
     protected $model = Course::class;
 
-        /**
+    /**
      * Return all the courses taught by a professor or enrolled in by a student
      */
     public function showCourses($id){
@@ -36,7 +37,7 @@ class CourseController extends Controller
         }
     }
 
-        /**
+    /**
      * Return information about a singular course taught by/enrolled in a professor/student
      */
     public function showCourse($id, $courseId){

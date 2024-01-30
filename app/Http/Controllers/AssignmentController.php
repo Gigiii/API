@@ -8,7 +8,8 @@ use App\Models\AssignmentAttachment;
 use App\Models\AssignedCourses;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\EnrolledCourses;
+use Illuminate\Support\Facades\Storage;
 
 class AssignmentController extends Controller
 {
@@ -22,20 +23,40 @@ class AssignmentController extends Controller
     {
         if(auth()->user()->role == "Professor"){
             $request->validate([
+                'professorId' => 'required',
                 'title' => 'required',
                 'description' => 'required',
                 'maxGrade' => 'required|numeric',
                 'deadline'=> 'required|date',
                 'pictureLocation' => 'required',
                 'status' => 'required|boolean',
+                'fileLocations' => 'required',
+                'courseId' => 'required',
                 ]);
-            Assignment::create($request->all());
-            return response()->json(['message' => 'Assignment created successfully']);
+            $assignmentData = $request->except('fileLocations', 'courseId');
+            $assignment = Assignment::create($assignmentData);
+            foreach ($request->fileLocations as $fileLocation){
+
+                $newRequest = new Request();
+                $newRequest->merge([
+                    'assignmentId' => $assignment->id,
+                    'fileLocation' => $fileLocation
+                ]);
+                $this->createAttachment($newRequest);  
+            }
+
+            $assignedCourse = AssignedCourses::create([
+                'courseId' => $request->courseId,
+                'assignmentId' => $assignment->id
+            ]);
+            return response()->json($assignment);
 
         }else{
-            return response("Only a professor can edit an assignment", 403);
+            return response("Only a professor can create an assignment", 403);
         }
     }
+
+
 
     private function showAssignmentAttachments(string $id)
     {
@@ -48,11 +69,16 @@ class AssignmentController extends Controller
      */
     public function showAssignment($id)
     {
-        $assignment = Assignment::findOrFail($id);
+        $courseId = AssignedCourses::where('assignmentId', $id)->pluck('courseId');
+        $courseCounts = EnrolledCourses::where('courseId', $courseId)->count();
+        $assignment = Assignment::findOrFail($id);        
+        $submissionCount = $assignment->submissions()->count();
         $attachments = $this->showAssignmentAttachments($id);
         return response()->json([
-            'Assignment' => $assignment,
-            'Attachments' => $attachments
+            'assignment' => $assignment,
+            'attachments' => $attachments,
+            'student_count' => $courseCounts,
+            'submission_count' => $submissionCount
         ]);
     }
 
@@ -72,27 +98,36 @@ class AssignmentController extends Controller
     /**
      * Update the specified Assignment
      */
-    public function updateAssignment(Request $request, $id)
+    public function updateAssignment(Request $request, int $id)
     {
 
-        if (auth()->user()->role == "Professor"){
-
+        if(auth()->user()->role == "Professor"){
             $request->validate([
-                'title' => 'nullable',
-                'description' => 'nullable',
-                'maxGrade' => 'nullable|numeric',
-                'deadline'=> 'nullable|date',
+                'professorId' => 'required',
+                'title' => 'required',
+                'description' => 'required',
+                'maxGrade' => 'required|numeric',
+                'deadline'=> 'required|date',
                 'pictureLocation' => 'nullable',
-                'status' => 'nullable|boolean',
+                'status' => 'required|boolean',
+                'fileLocations' => 'required',
                 ]);
-                $assignment = Assignment::findOrFail($id); 
-                $assignment->update($request->all());
-            return response()->json(['message' => 'Assignment updated successfully']);
+            $assignmentData = $request->except('fileLocations');
+            $assignment = Assignment::findOrFail($id); 
+            $assignment->update($assignmentData);
+            foreach ($request->fileLocations as $fileLocation){
+                $newRequest = new Request();
+                $newRequest->merge([
+                    'assignmentId' => $assignment->id,
+                    'fileLocation' => $fileLocation
+                ]);
+                $this->createAttachment($newRequest);  
+
+            }
+            return response()->json($assignment);
 
         }else{
-
-            return response("Only a professor can edit an assignment", 403);
-
+            return response("Only a professor can create an assignment", 403);
         }
     }
 
@@ -124,24 +159,21 @@ class AssignmentController extends Controller
     /**
      * Delete the Attachment
      */
-    private function deleteAttachment(array $ids){
+    public function deleteAttachment(int $id){
 
-        foreach ($ids as $id) {
+        $attachment = AssignmentAttachment::findOrFail($id);
 
-            $attachment = AssignmentAttachment::findOrFail($id);
+        if ($attachment) {
 
-            if ($attachment) {
+            $attachment->delete();
+            return response()->json(['status' => 'success', 'msg' => 'Attachment deleted successfully']);
+        
+        } else {
 
-                $attachment->delete();
-                return response()->json(['status' => 'success', 'msg' => 'Attachment deleted successfully']);
-           
-            } else {
-
-                return response()->json(['status' => 'fail', 'msg' => 'Attachment not found']);
-
-            }
+            return response()->json(['status' => 'fail', 'msg' => 'Attachment not found']);
 
         }
+
     }
 
     /**

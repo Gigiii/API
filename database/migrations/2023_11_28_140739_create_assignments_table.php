@@ -20,7 +20,7 @@ return new class extends Migration
             $table->dateTime('deadline');
             $table->tinyInteger('maxGrade');
             $table->string('pictureLocation');
-            $table->boolean('status');
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }

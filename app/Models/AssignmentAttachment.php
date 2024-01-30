@@ -9,7 +9,7 @@ class AssignmentAttachment extends Model
 {
     use HasFactory;
     protected $table = "assignment_attachments";
-    protected $fillable = ['FileLocation'];
+    protected $fillable = ['fileLocation', "assignmentId"];
 
     public function Assignment(){
         return $this->belongsTo(Assignment::class, "assignmentId");
